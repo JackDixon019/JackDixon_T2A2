@@ -3,6 +3,7 @@ import os
 from flask import Flask
 
 from init import bcrypt, db, jwt, ma
+from controllers.__init__ import registerable_controllers
 
 
 def create_app():
@@ -20,6 +21,9 @@ def create_app():
     ma.init_app(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
+
+    for controller in registerable_controllers:
+        app.register_blueprint(controller)
 
     return app
 
