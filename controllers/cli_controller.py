@@ -24,7 +24,8 @@ def seed_all():
     birds = [
         Bird(
         name="Pigeon",
-        description="Choncc"
+        description="Choncc",
+        is_approved=True
         ),
 
         Bird(
