@@ -3,6 +3,7 @@ from flask import Blueprint
 from init import db
 
 from models.bird import Bird
+from models.location import Location
 
 db_commands = Blueprint("db", __name__)
 
@@ -39,6 +40,25 @@ def seed_all():
         )
     ]
 
+    locations = [
+        Location(
+        name="Sydney"
+        ),
+
+        Location(
+        name="Melbourne"
+        ),
+
+        Location(
+        name="Adelaide"
+        ),
+        
+        Location(
+        name="Brisbane"
+        )
+    ]
+
     db.session.add_all(birds)
+    db.session.add_all(locations)
     db.session.commit()
     print("May ye reap what ye haÞ sown...")
