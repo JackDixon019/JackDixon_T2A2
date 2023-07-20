@@ -1,9 +1,10 @@
 from flask import Blueprint
 
-from init import db
+from init import db, bcrypt
 
 from models.bird import Bird
 from models.location import Location
+from models.user import User
 
 db_commands = Blueprint("db", __name__)
 
@@ -52,12 +53,34 @@ def seed_all():
         Location(
         name="Adelaide"
         ),
-        
+
         Location(
         name="Brisbane"
         )
     ]
 
+    users = [
+        User(
+        username="user1",
+        email="user1@email.com",
+        password=bcrypt.generate_password_hash("password").decode("utf-8")
+        ),
+
+        User(
+        username="user2",
+        email="user2@email.com",
+        password=bcrypt.generate_password_hash("password").decode("utf-8")
+        ),
+
+        User(
+        username="admin",
+        email="admin@email.com",
+        password=bcrypt.generate_password_hash("password1").decode("utf-8"),
+        is_admin=True
+        )
+    ]
+
+    db.session.add_all(users)
     db.session.add_all(birds)
     db.session.add_all(locations)
     db.session.commit()
