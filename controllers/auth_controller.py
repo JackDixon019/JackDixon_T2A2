@@ -7,7 +7,7 @@ from psycopg2 import errorcodes
 
 from init import db, bcrypt
 from models.user import User, user_schema
-from controllers.decorators import authorise_as_admin
+from decorators import authorise_as_admin
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
