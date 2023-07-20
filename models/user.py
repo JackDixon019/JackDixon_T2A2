@@ -1,8 +1,9 @@
 from init import db, ma
 
+
 # Builds model for 'users' table in db
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer(), primary_key=True)
     username = db.Column(db.String(), nullable=False)
@@ -13,9 +14,9 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'username', 'password', 'is_admin', 'email')
+        fields = ("id", "username", "password", "is_admin", "email")
         ordered = True
 
-user_schema = UserSchema(exclude=['password'])
-users_schema = UserSchema(many=True, exclude=['password'])
 
+user_schema = UserSchema(exclude=["password"])
+users_schema = UserSchema(many=True, exclude=["password"])

@@ -7,13 +7,12 @@ from models.location import Location, location_schema, locations_schema
 locations_bp = Blueprint("locations", __name__, url_prefix="/locations")
 
 
-
 @locations_bp.route("/", methods=["GET"])
 def get_all_locations():
     stmt = db.select(Location).order_by(Location.id)
     locations = db.session.scalars(stmt)
     return locations_schema.dump(locations)
- 
+
 
 @locations_bp.route("/<int:id>")
 def get_one_location(id):
@@ -29,8 +28,7 @@ def create_location():
     body_data = location_schema.load(request.get_json())
 
     location = location(
-        name=body_data.get("name"),
-        description=body_data.get("description")
+        name=body_data.get("name"), description=body_data.get("description")
     )
 
     db.session.add(location)
@@ -48,7 +46,7 @@ def delete_location(id):
         return {"message": f"location '{location.name}' deleted successfully!"}
     else:
         return {"error": f"location with id: {id} not found"}
-    
+
 
 @locations_bp.route("/<int:id>", methods=["PUT", "PATCH"])
 def update_location(id):
@@ -58,9 +56,8 @@ def update_location(id):
     location = db.session.scalar(stmt)
     if not location:
         return {"error": f"location with id: {id} not found"}
-    
-    location.name=body_data.get("name") or location.name
+
+    location.name = body_data.get("name") or location.name
 
     db.session.commit()
     return location_schema.dump(location)
-    

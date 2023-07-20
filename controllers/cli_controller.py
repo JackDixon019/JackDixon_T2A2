@@ -8,6 +8,7 @@ from models.user import User
 
 db_commands = Blueprint("db", __name__)
 
+
 @db_commands.cli.command("create")
 def create_all():
     db.create_all()
@@ -24,60 +25,35 @@ def drop_all():
 def seed_all():
     # Creates Bird objects
     birds = [
-        Bird(
-        name="Pigeon",
-        description="Choncc",
-        is_approved=True
-        ),
-
-        Bird(
-        name="Cockatoo",
-        description="Loud"
-        ),
-
-        Bird(
-        name="Lorikeet",
-        description="Gay"
-        )
+        Bird(name="Pigeon", description="Choncc", is_approved=True),
+        Bird(name="Cockatoo", description="Loud"),
+        Bird(name="Lorikeet", description="Gay"),
     ]
 
     locations = [
-        Location(
-        name="Sydney"
-        ),
-
-        Location(
-        name="Melbourne"
-        ),
-
-        Location(
-        name="Adelaide"
-        ),
-
-        Location(
-        name="Brisbane"
-        )
+        Location(name="Sydney"),
+        Location(name="Melbourne"),
+        Location(name="Adelaide"),
+        Location(name="Brisbane"),
     ]
 
     users = [
         User(
-        username="user1",
-        email="user1@email.com",
-        password=bcrypt.generate_password_hash("password").decode("utf-8")
+            username="user1",
+            email="user1@email.com",
+            password=bcrypt.generate_password_hash("password").decode("utf-8"),
         ),
-
         User(
-        username="user2",
-        email="user2@email.com",
-        password=bcrypt.generate_password_hash("password").decode("utf-8")
+            username="user2",
+            email="user2@email.com",
+            password=bcrypt.generate_password_hash("password").decode("utf-8"),
         ),
-
         User(
-        username="admin",
-        email="admin@email.com",
-        password=bcrypt.generate_password_hash("password1").decode("utf-8"),
-        is_admin=True
-        )
+            username="admin",
+            email="admin@email.com",
+            password=bcrypt.generate_password_hash("password1").decode("utf-8"),
+            is_admin=True,
+        ),
     ]
 
     db.session.add_all(users)
