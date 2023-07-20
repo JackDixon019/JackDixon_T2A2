@@ -13,8 +13,8 @@ def create_app():
     app.json.sort_keys = False
 
     # Get variables from .env file
-    app.config["SQLALCHEMY_DATABASE_URI"]=os.environ.get("DATABASE_URL")
-    app.config["JWT_SECRET_KEY"]=os.environ.get("JWT_SECRET_KEY")
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 
     # Calls objects within function to prevent double-import errors
     db.init_app(app)
@@ -26,4 +26,3 @@ def create_app():
         app.register_blueprint(controller)
 
     return app
-

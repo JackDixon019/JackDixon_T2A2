@@ -12,7 +12,7 @@ def get_all_birds():
     stmt = db.select(Bird).order_by(Bird.id)
     birds = db.session.scalars(stmt)
     return birds_schema.dump(birds)
- 
+
 
 @birds_bp.route("/<int:id>")
 def get_one_bird(id):
@@ -27,10 +27,7 @@ def get_one_bird(id):
 def create_bird():
     body_data = bird_schema.load(request.get_json())
 
-    bird = Bird(
-        name=body_data.get("name"),
-        description=body_data.get("description")
-    )
+    bird = Bird(name=body_data.get("name"), description=body_data.get("description"))
 
     db.session.add(bird)
     db.session.commit()
@@ -47,7 +44,7 @@ def delete_bird(id):
         return {"message": f"Bird '{bird.name}' deleted successfully!"}
     else:
         return {"error": f"Bird with id: {id} not found"}
-    
+
 
 @birds_bp.route("/<int:id>", methods=["PUT", "PATCH"])
 def update_bird(id):
@@ -57,11 +54,10 @@ def update_bird(id):
     bird = db.session.scalar(stmt)
     if not bird:
         return {"error": f"Bird with id: {id} not found"}
-    
-    bird.name=body_data.get("name") or bird.name
-    bird.description=body_data.get("description") or bird.description
-    bird.is_approved=False
+
+    bird.name = body_data.get("name") or bird.name
+    bird.description = body_data.get("description") or bird.description
+    bird.is_approved = False
 
     db.session.commit()
     return bird_schema.dump(bird)
-    
