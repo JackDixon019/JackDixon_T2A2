@@ -8,6 +8,7 @@ from psycopg2 import errorcodes
 from init import db, bcrypt
 from models.user import User, user_schema
 from decorators import authorise_as_admin
+from functions import find_entity_by_id
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -19,9 +20,7 @@ def create_user():
         user = User()
         password = body_data.get("password")
         if password:
-            user.password = bcrypt.generate_password_hash(
-                body_data.get("password")
-            ).decode("utf-8")
+            user.password = bcrypt.generate_password_hash(body_data.get("password")).decode("utf-8")
         user.username = body_data.get("username")
         user.email = body_data.get("email")
         db.session.add(user)
@@ -52,8 +51,7 @@ def auth_login():
 @jwt_required()
 @authorise_as_admin
 def delete_user(id):
-    stmt = db.select(User).filter_by(id=id)
-    user = db.session.scalar(stmt)
+    user = find_entity_by_id(User, id)
     if user:
         db.session.delete(user)
         db.session.commit()

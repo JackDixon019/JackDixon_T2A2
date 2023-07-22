@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from functions import find_entity_by_id
 
 from init import db
 from models.bird import Bird, bird_schema, birds_schema
@@ -16,8 +17,7 @@ def get_all_birds():
 
 @birds_bp.route("/<int:id>")
 def get_one_bird(id):
-    stmt = db.select(Bird).filter_by(id=id)
-    bird = db.session.scalar(stmt)
+    bird = find_entity_by_id(Bird, id)
     if bird:
         return bird_schema.dump(bird)
     return {"error": f"No bird found with id: {id}"}
@@ -27,7 +27,10 @@ def get_one_bird(id):
 def create_bird():
     body_data = bird_schema.load(request.get_json())
 
-    bird = Bird(name=body_data.get("name"), description=body_data.get("description"))
+    bird = Bird(
+        name=body_data.get("name"), 
+        description=body_data.get("description")
+        )
 
     db.session.add(bird)
     db.session.commit()
@@ -36,8 +39,7 @@ def create_bird():
 
 @birds_bp.route("/<int:id>", methods=["DELETE"])
 def delete_bird(id):
-    stmt = db.select(Bird).filter_by(id=id)
-    bird = db.session.scalar(stmt)
+    bird = find_entity_by_id(Bird, id)
     if bird:
         db.session.delete(bird)
         db.session.commit()
@@ -50,8 +52,7 @@ def delete_bird(id):
 def update_bird(id):
     body_data = bird_schema.load(request.get_json(), partial=True)
 
-    stmt = db.select(Bird).filter_by(id=id)
-    bird = db.session.scalar(stmt)
+    bird = find_entity_by_id(Bird, id)
     if not bird:
         return {"error": f"Bird with id: {id} not found"}
 
