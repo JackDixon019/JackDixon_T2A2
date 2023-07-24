@@ -4,6 +4,7 @@ from init import db, bcrypt
 
 from models.bird import Bird
 from models.location import Location
+from models.session import Session
 from models.user import User
 
 db_commands = Blueprint("db", __name__)
@@ -56,8 +57,24 @@ def seed_all():
         ),
     ]
 
+
+    sessions = [
+        Session(
+            user_id=1
+        ),
+        Session(
+            user_id=2
+        ),
+        Session(
+        date="2023-07-23",
+        user_id=1
+        )
+    ]
+
+
     db.session.add_all(users)
     db.session.add_all(birds)
     db.session.add_all(locations)
+    db.session.add_all(sessions)
     db.session.commit()
     print("May ye reap what ye haÞ sown...")
