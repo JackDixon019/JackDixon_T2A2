@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from functions import find_entity_by_id
 
 from init import db
@@ -15,7 +16,7 @@ def get_all_birds():
     return birds_schema.dump(birds)
 
 
-@birds_bp.route("/<int:id>")
+@birds_bp.route("/<int:id>", methods=["GET"])
 def get_one_bird(id):
     bird = find_entity_by_id(Bird, id)
     if bird:
@@ -24,12 +25,14 @@ def get_one_bird(id):
 
 
 @birds_bp.route("/", methods=["POST"])
+@jwt_required()
 def create_bird():
     body_data = bird_schema.load(request.get_json())
 
     bird = Bird(
         name=body_data.get("name"), 
-        description=body_data.get("description")
+        description=body_data.get("description"),
+        submitting_user_id=get_jwt_identity()
         )
 
     db.session.add(bird)
@@ -49,6 +52,7 @@ def delete_bird(id):
 
 
 @birds_bp.route("/<int:id>", methods=["PUT", "PATCH"])
+@jwt_required()
 def update_bird(id):
     body_data = bird_schema.load(request.get_json(), partial=True)
 
@@ -58,6 +62,7 @@ def update_bird(id):
 
     bird.name = body_data.get("name") or bird.name
     bird.description = body_data.get("description") or bird.description
+    bird.submitting_user_id = get_jwt_identity()
     bird.is_approved = False
 
     db.session.commit()
