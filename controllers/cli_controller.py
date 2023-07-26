@@ -72,14 +72,14 @@ def seed_all():
 
     sessions = [
         Session(
-            user_id=1
+            user=users[0]
         ),
         Session(
-            user_id=2
+            user=users[0]
         ),
         Session(
         date="2023-07-23",
-        user_id=1
+        user=users[2]
         )
     ]
 
