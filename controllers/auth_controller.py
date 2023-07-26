@@ -58,3 +58,11 @@ def delete_user(id):
         return {"message": f"User with id: {id} has been successfully deleted"}
     else:
         return {"error": f"User with id: {id} not found"}
+
+
+@auth_bp.route("/<int:id>", methods=["GET"])
+def get_user(id):
+    user = find_entity_by_id(User, id)
+    
+    if user:
+        return user_schema.dump(user)

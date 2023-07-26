@@ -24,20 +24,6 @@ def drop_all():
 
 @db_commands.cli.command("seed")
 def seed_all():
-    # Creates Bird objects
-    birds = [
-        Bird(name="Pigeon", description="Choncc", is_approved=True),
-        Bird(name="Cockatoo", description="Loud"),
-        Bird(name="Lorikeet", description="Gay"),
-    ]
-
-    locations = [
-        Location(name="Sydney"),
-        Location(name="Melbourne"),
-        Location(name="Adelaide"),
-        Location(name="Brisbane"),
-    ]
-
     users = [
         User(
             username="user1",
@@ -56,7 +42,33 @@ def seed_all():
             is_admin=True,
         ),
     ]
+    
+    # Creates Bird objects
+    birds = [
+        Bird(
+            name="Pigeon",
+            description="Choncc",
+            submitting_user=users[2],
+            is_approved=True,
+        ),
+        Bird(
+            name="Cockatoo",
+            description="Loud",
+            submitting_user=users[0],
+            ),
+        Bird(
+            name="Lorikeet",
+            description="Gay",
+            submitting_user=users[1],
+            ),
+    ]
 
+    locations = [
+        Location(name="Sydney"),
+        Location(name="Melbourne"),
+        Location(name="Adelaide"),
+        Location(name="Brisbane"),
+    ]
 
     sessions = [
         Session(
