@@ -24,6 +24,18 @@ def drop_all():
 
 
 @db_commands.cli.command("seed")
+def seed_db():
+    seed_all()
+    print("May ye reap what ye haÞ sown...")
+
+
+@db_commands.cli.command("reset")
+def reset_db():
+    db.drop_all()
+    db.create_all()
+    seed_all()
+    print('I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth.')
+
 def seed_all():
     # creates user objects
     users = [
@@ -132,4 +144,3 @@ def seed_all():
     db.session.add_all(locations)
     db.session.add_all(sessions)
     db.session.commit()
-    print("May ye reap what ye haÞ sown...")

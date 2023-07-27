@@ -5,6 +5,8 @@ from functions import find_entity_by_id
 
 from init import db
 from models.session import Session, session_schema, sessions_schema
+from models.session_count import SessionCount, session_count_schema
+from models.bird import Bird
 
 
 sessions_bp = Blueprint("sessions", __name__, url_prefix="/sessions")
@@ -38,6 +40,29 @@ def create_session():
     db.session.add(session)
     db.session.commit()
     return session_schema.dump(session), 201
+
+
+@sessions_bp.route("/<int:id>/count", methods=["POST"])
+@jwt_required()
+def create_session_count(id):
+    body_data = session_count_schema.load(request.get_json(), partial=True)
+
+    counting_session = find_entity_by_id(Session, id)
+    bird_being_counted = find_entity_by_id(Bird, body_data.get("bird_id"))
+
+    bird_already_counted = db.session.scalar(db.select(SessionCount).filter_by(bird_id=body_data.get("bird_id"), session_id=id))
+    print(bird_already_counted)
+    if bird_already_counted:
+        return {"Error": "This bird has already been counted this session."}
+    session_count = SessionCount(
+        bird=bird_being_counted,
+        count=body_data.get("count"),
+        session=counting_session
+    )
+
+    db.session.add(session_count)
+    db.session.commit()
+    return session_schema.dump(counting_session), 201
 
 
 @sessions_bp.route("/<int:id>", methods=["DELETE"])
