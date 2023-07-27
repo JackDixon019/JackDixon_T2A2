@@ -12,15 +12,15 @@ class Bird(db.Model):
     is_approved = db.Column(db.Boolean(), default=False)
 
     submitting_user_id = db.Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
-
     submitting_user = db.relationship('User', back_populates='submitted_birds')
 
+    session_counts = db.relationship('SessionCount', back_populates='bird', cascade='all, delete')
      
 
 class BirdSchema(ma.Schema):
-    submitting_user = fields.Nested('UserSchema', only=['username'])
+    submitting_user = fields.Nested('UserSchema', only=['id'])
     class Meta:
-        fields = ("id", "name", "description", "is_approved", "submitting_user")
+        fields = ("id", "name", "description", "is_approved", "submitting_user_id")
         ordered = True
 
 

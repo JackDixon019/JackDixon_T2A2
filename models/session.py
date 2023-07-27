@@ -13,15 +13,16 @@ class Session(db.Model):
     date = db.Column(db.Date(), nullable=False, default=datetime.today().date())
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
-
     user = db.relationship('User', back_populates='user_sessions')
 
-class SessionSchema(ma.Schema):
-    user = fields.Nested('UserSchema', only=['username'])
-    class Meta:
-        fields = ("id", "date", "user")
-        ordered = True
+    session_counts = db.relationship('SessionCount', back_populates='session', cascade='all, delete')
 
+class SessionSchema(ma.Schema):
+    user = fields.Nested('UserSchema', only=['id'])
+    session_counts = fields.List(fields.Nested('SessionCountSchema', only=['bird_id', 'count']))
+    class Meta:
+        fields = ("id", "date", "user_id", 'session_counts')
+        ordered = True
 
 session_schema = SessionSchema()
 sessions_schema = SessionSchema(many=True)

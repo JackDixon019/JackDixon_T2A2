@@ -6,6 +6,7 @@ from models.bird import Bird
 from models.location import Location
 from models.session import Session
 from models.user import User
+from models.session_count import SessionCount
 
 db_commands = Blueprint("db", __name__)
 
@@ -24,6 +25,7 @@ def drop_all():
 
 @db_commands.cli.command("seed")
 def seed_all():
+    # creates user objects
     users = [
         User(
             username="user1",
@@ -63,6 +65,7 @@ def seed_all():
             ),
     ]
 
+    # creates location objects
     locations = [
         Location(name="Sydney"),
         Location(name="Melbourne"),
@@ -70,6 +73,7 @@ def seed_all():
         Location(name="Brisbane"),
     ]
 
+    # creates session objects
     sessions = [
         Session(
             user=users[0]
@@ -83,7 +87,46 @@ def seed_all():
         )
     ]
 
+    session_counts = [
+        SessionCount(
+        count=5,
+        session=sessions[0],
+        bird=birds[0]
+        ),
+        
+        SessionCount(
+        count=2,
+        session=sessions[0],
+        bird=birds[1]
+        ),
 
+        SessionCount(
+        count=1,
+        session=sessions[0],
+        bird=birds[2]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[1],
+        bird=birds[0]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[1],
+        bird=birds[1]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[2],
+        bird=birds[2]
+        ),
+
+    ]
+
+    db.session.add_all(session_counts)
     db.session.add_all(users)
     db.session.add_all(birds)
     db.session.add_all(locations)
