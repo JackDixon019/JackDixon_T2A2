@@ -40,7 +40,7 @@ def auth_login():
     user = db.session.scalar(stmt)
     if user and bcrypt.check_password_hash(user.password, body_data.get("password")):
         token = create_access_token(
-            identity=str(user.id), expires_delta=timedelta(days=1)
+            identity=str(user.id), expires_delta=timedelta(days=7)
         )
         return {"email": user.email, "token": token, "is_admin": user.is_admin}
     else:

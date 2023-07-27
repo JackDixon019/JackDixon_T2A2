@@ -7,6 +7,7 @@ from models.location import Location
 from models.session import Session
 from models.user import User
 from models.session_count import SessionCount
+from models.approved_bird import ApprovedBird
 
 db_commands = Blueprint("db", __name__)
 
@@ -77,6 +78,11 @@ def seed_all():
             ),
     ]
 
+    approved_bird = ApprovedBird(
+        admin=users[2],
+        bird=birds[0],
+    )
+
     # creates location objects
     locations = [
         Location(name="Sydney"),
@@ -143,4 +149,5 @@ def seed_all():
     db.session.add_all(birds)
     db.session.add_all(locations)
     db.session.add_all(sessions)
+    db.session.add(approved_bird)
     db.session.commit()
