@@ -6,6 +6,7 @@ from models.bird import Bird
 from models.location import Location
 from models.session import Session
 from models.user import User
+from models.session_count import SessionCount
 
 db_commands = Blueprint("db", __name__)
 
@@ -23,7 +24,20 @@ def drop_all():
 
 
 @db_commands.cli.command("seed")
+def seed_db():
+    seed_all()
+    print("May ye reap what ye haÞ sown...")
+
+
+@db_commands.cli.command("reset")
+def reset_db():
+    db.drop_all()
+    db.create_all()
+    seed_all()
+    print('I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth.')
+
 def seed_all():
+    # creates user objects
     users = [
         User(
             username="user1",
@@ -63,6 +77,7 @@ def seed_all():
             ),
     ]
 
+    # creates location objects
     locations = [
         Location(name="Sydney"),
         Location(name="Melbourne"),
@@ -70,23 +85,62 @@ def seed_all():
         Location(name="Brisbane"),
     ]
 
+    # creates session objects
     sessions = [
         Session(
-            user_id=1
+            user=users[0]
         ),
         Session(
-            user_id=2
+            user=users[0]
         ),
         Session(
         date="2023-07-23",
-        user_id=1
+        user=users[2]
         )
     ]
 
+    session_counts = [
+        SessionCount(
+        count=5,
+        session=sessions[0],
+        bird=birds[0]
+        ),
+        
+        SessionCount(
+        count=2,
+        session=sessions[0],
+        bird=birds[1]
+        ),
 
+        SessionCount(
+        count=1,
+        session=sessions[0],
+        bird=birds[2]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[1],
+        bird=birds[0]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[1],
+        bird=birds[1]
+        ),
+
+        SessionCount(
+        count=5,
+        session=sessions[2],
+        bird=birds[2]
+        ),
+
+    ]
+
+    db.session.add_all(session_counts)
     db.session.add_all(users)
     db.session.add_all(birds)
     db.session.add_all(locations)
     db.session.add_all(sessions)
     db.session.commit()
-    print("May ye reap what ye haÞ sown...")
