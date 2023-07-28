@@ -25,7 +25,6 @@ class Bird(db.Model):
 class BirdSchema(ma.Schema):
     # Normally I'd use an admin_id field, but it caused circular dependencies
     approving_admin = fields.Nested("ApprovedBirdSchema", only=['admin_id'])
-    submitting_user = fields.Nested("UserSchema", exclude=["submitted_birds", "approved_birds"])
 
     @post_dump
     def remove_null_fields(self, data, **kwargs):

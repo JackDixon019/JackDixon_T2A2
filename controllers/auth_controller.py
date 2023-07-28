@@ -1,21 +1,24 @@
 from datetime import timedelta
 
 from flask import Blueprint, request
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required
 from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
 
 from init import db, bcrypt
 from models.user import User, user_schema
-from decorators import authorise_as_admin_or_original_user, get_args_kwargs
-from functions import find_entity_by_id
+from decorators import authorise_as_admin_or_original_user
+from functions import delete_restricted_entity, find_entity_by_id
 
+# defines blueprint
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
+# allows user registration
 @auth_bp.route("/register", methods=["POST"])
 def create_user():
     try:
+        # gets data from request body, adds it to user object
         body_data = request.get_json()
         user = User()
         password = body_data.get("password")
@@ -23,9 +26,11 @@ def create_user():
             user.password = bcrypt.generate_password_hash(body_data.get("password")).decode("utf-8")
         user.username = body_data.get("username")
         user.email = body_data.get("email")
+
         db.session.add(user)
         db.session.commit()
         return user_schema.dump(user), 201
+
     except IntegrityError as err:
         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
             return {"error": "Email address already in use"}, 409
@@ -33,11 +38,13 @@ def create_user():
             return {"error": f"Required field: {err.orig.diag.column_name} empty"}, 409
 
 
+# allows users to login, returns an auth token
 @auth_bp.route("/login", methods=["POST"])
 def auth_login():
     body_data = request.get_json()
     stmt = db.select(User).filter_by(email=body_data.get("email"))
     user = db.session.scalar(stmt)
+    # checks hashed password aligns with submitted one
     if user and bcrypt.check_password_hash(user.password, body_data.get("password")):
         token = create_access_token(
             identity=str(user.id), expires_delta=timedelta(days=7)
@@ -47,28 +54,25 @@ def auth_login():
         return {"error": "Incorrect username or password"}
 
 
+# deletes existing user
 @auth_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
-@authorise_as_admin_or_original_user
-@get_args_kwargs
+# allows only either an admin or the user themselves to delete
 def delete_user(id):
     user = find_entity_by_id(User, id)
-    if user:
-        # deletes only unapproved_birds
-        for bird in user.submitted_birds:
-            if bird.is_approved == False:
-                db.session.delete(bird)
-                
-        db.session.delete(user)
-        db.session.commit()
-        return {"message": f"User with id: {id} has been successfully deleted"}
-    else:
-        return {"error": f"User with id: {id} not found"}
+    print("flag")
+    # deletes only unapproved_birds
+    for bird in user.submitted_birds:
+        if bird.is_approved == False:
+            db.session.delete(bird)
+    return delete_restricted_entity(user, user.id)
 
 
+
+# returns a user
 @auth_bp.route("/<int:id>", methods=["GET"])
 def get_user(id):
     user = find_entity_by_id(User, id)
-    
+
     if user:
         return user_schema.dump(user)
