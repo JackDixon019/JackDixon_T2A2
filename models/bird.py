@@ -1,3 +1,4 @@
+from sqlalchemy import null
 from init import db, ma
 
 from marshmallow import fields, post_dump
@@ -9,34 +10,38 @@ class Bird(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(), nullable=False)
     description = db.Column(db.String(), nullable=False)
-    
     is_approved = db.Column(db.Boolean(), default=False)
-
-    approving_admin = db.relationship('ApprovedBird', back_populates='bird', uselist=False)
-
-    submitting_user_id = db.Column(db.Integer(), db.ForeignKey('users.id'), nullable=False)
+    # relates birds and users
+    submitting_user_id = db.Column(db.Integer(), db.ForeignKey('users.id'))
     submitting_user = db.relationship('User', back_populates='submitted_birds')
-
+    # relation with admin via ApprovedBird join table.
+    # While I don't think a join table is strictly necessary for a 1-to-many relationship, 
+    # I couldn't make two connections directly from Bird to User without issues
+    approving_admin = db.relationship('ApprovedBird', back_populates='bird', uselist=False, cascade="all, delete")
+    # relates birds with session_counts
     session_counts = db.relationship('SessionCount', back_populates='bird', cascade='all, delete')
 
 
 class BirdSchema(ma.Schema):
-    
+    # Normally I'd use an admin_id field, but it caused circular dependencies
     approving_admin = fields.Nested("ApprovedBirdSchema", only=['admin_id'])
+    submitting_user = fields.Nested("UserSchema", exclude=["submitted_birds", "approved_birds"])
 
     @post_dump
-    def remove_approving_admin(self, data, **kwargs):
-        if data["is_approved"] == True:
-            return {
-                key:value for key, value in data.items()
-            }
-        else:
-            return {
-                key:value for key, value in data.items()
-                if key != "approving_admin"
-            }
+    def remove_null_fields(self, data, **kwargs):
+        # This skips null value fields
+        result = {
+            key:value for key, value in data.items()
+            if value != None
+        }
+        # If original user was deleted, returns "user_deleted" as a result
+        if "submitting_user_id" not in result:
+            result["submitting_user_id"] = "User Deleted"
+        print(result)
+        return result
+
     class Meta:
-        fields = ("id", "name", "description", "is_approved", "submitting_user_id", "approving_admin")
+        fields = ("id", "name", "description", "is_approved", "approving_admin", "submitting_user_id")
         ordered = True
 
 

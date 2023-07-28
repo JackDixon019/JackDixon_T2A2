@@ -63,7 +63,7 @@ def seed_all():
         Bird(
             name="Pigeon",
             description="Choncc",
-            submitting_user=users[2],
+            submitting_user=users[0],
             is_approved=True,
         ),
         Bird(

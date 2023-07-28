@@ -7,7 +7,7 @@ from psycopg2 import errorcodes
 
 from init import db, bcrypt
 from models.user import User, user_schema
-from decorators import authorise_as_admin
+from decorators import authorise_as_admin_or_original_user, get_args_kwargs
 from functions import find_entity_by_id
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -49,10 +49,16 @@ def auth_login():
 
 @auth_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
-@authorise_as_admin
+@authorise_as_admin_or_original_user
+@get_args_kwargs
 def delete_user(id):
     user = find_entity_by_id(User, id)
     if user:
+        # deletes only unapproved_birds
+        for bird in user.submitted_birds:
+            if bird.is_approved == False:
+                db.session.delete(bird)
+                
         db.session.delete(user)
         db.session.commit()
         return {"message": f"User with id: {id} has been successfully deleted"}
