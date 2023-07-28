@@ -1,30 +1,27 @@
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from decorators import authorise_as_admin
-from functions import find_entity_by_id
 
+from controllers.session_count_controller import count_bp
+from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
 from init import db
 from models.session import Session, session_schema, sessions_schema
-from controllers.session_count_controller import count_bp
-
+from models.user import User
 
 sessions_bp = Blueprint("sessions", __name__, url_prefix="/sessions")
+# establishes count_bp as a child of sessions_bp
 sessions_bp.register_blueprint(count_bp, url_prefix="/<int:session_id>/count")
 
 
 @sessions_bp.route("/", methods=["GET"])
 def get_all_sessions():
-    stmt = db.select(Session).order_by(Session.id)
-    sessions = db.session.scalars(stmt)
+    sessions = find_all_entities(Session, Session.id)
     return sessions_schema.dump(sessions)
 
 
 @sessions_bp.route("/<int:id>")
 def get_one_session(id):
     session = find_entity_by_id(Session, id)
-    if session:
-        return session_schema.dump(session)
-    return {"error": f"No session found with id: {id}"}
+    return session_schema.dump(session)
 
 
 @sessions_bp.route("/", methods=["POST"])
@@ -44,25 +41,22 @@ def create_session():
 
 @sessions_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
-@authorise_as_admin
 def delete_session(id):
     session = find_entity_by_id(Session, id)
-    if session:
-        db.session.delete(session)
-        db.session.commit()
-        return {"message": f"session '{session.name}' deleted successfully!"}
-    else:
-        return {"error": f"session with id: {id} not found"}
+    return delete_restricted_entity(session, session.user_id)
+    # if session:
+    #     db.session.delete(session)
+    #     db.session.commit()
+    #     return {"message": f"session '{session.name}' deleted successfully!"}
 
 
+# NB: no updating session counts here, they have their own endpoint
 @sessions_bp.route("/<int:id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def update_session(id):
     body_data = session_schema.load(request.get_json(), partial=True)
     
     session = find_entity_by_id(Session, id)
-    if not session:
-        return {"error": f"session with id: {id} not found"}
 
     session.date = body_data.get("date") or session.date
     session.user_id = get_jwt_identity()
