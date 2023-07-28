@@ -19,7 +19,8 @@ class User(db.Model):
 
     user_sessions = db.relationship('Session', back_populates='user', cascade='all, delete')
 
-    # user_location = db.relationship('Location', back_populates='users', cascade='all, delete')
+    location_id = db.Column(db.Integer(), db.ForeignKey('locations.id'))
+    location = db.relationship('Location', back_populates='users')
 
 
 class UserSchema(ma.Schema):
