@@ -38,23 +38,35 @@ def reset_db():
     print('I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth.')
 
 def seed_all():
+
+    # creates location objects
+    locations = [
+        Location(name="Sydney"),
+        Location(name="Melbourne"),
+        Location(name="Adelaide"),
+        Location(name="Brisbane"),
+    ]
+
     # creates user objects
     users = [
         User(
             username="user1",
             email="user1@email.com",
             password=bcrypt.generate_password_hash("password").decode("utf-8"),
+            location=locations[0],
         ),
         User(
             username="user2",
             email="user2@email.com",
             password=bcrypt.generate_password_hash("password").decode("utf-8"),
+            location=locations[0],
         ),
         User(
             username="admin",
             email="admin@email.com",
             password=bcrypt.generate_password_hash("password1").decode("utf-8"),
             is_admin=True,
+            location=locations[1],
         ),
     ]
     
@@ -78,33 +90,29 @@ def seed_all():
             ),
     ]
 
-    approved_bird = ApprovedBird(
+    approved_birds = ApprovedBird(
         admin=users[2],
         bird=birds[0],
     )
 
-    # creates location objects
-    locations = [
-        Location(name="Sydney"),
-        Location(name="Melbourne"),
-        Location(name="Adelaide"),
-        Location(name="Brisbane"),
-    ]
-
     # creates session objects
     sessions = [
         Session(
-            user=users[0]
+            user=users[0],
+            session_location=locations[0],
         ),
         Session(
-            user=users[0]
+            user=users[0],
+            session_location=locations[0],
         ),
         Session(
-        date="2023-07-23",
-        user=users[2]
+            date="2023-07-23",
+            user=users[2],
+            session_location=locations[1]
         )
     ]
 
+    # creates session_count objects
     session_counts = [
         SessionCount(
         count=5,
@@ -149,5 +157,5 @@ def seed_all():
     db.session.add_all(birds)
     db.session.add_all(locations)
     db.session.add_all(sessions)
-    db.session.add(approved_bird)
+    db.session.add(approved_birds)
     db.session.commit()

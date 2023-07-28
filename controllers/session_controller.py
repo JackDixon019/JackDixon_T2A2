@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from controllers.session_count_controller import count_bp
+from decorators import authorise_as_admin
 from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
 from init import db
 from models.session import Session, session_schema, sessions_schema
@@ -28,10 +29,12 @@ def get_one_session(id):
 @jwt_required()
 def create_session():
     body_data = session_schema.load(request.get_json(), partial=True)
+    user = find_entity_by_id(User, get_jwt_identity())
 
     session = Session(
         date=body_data.get("date"), 
-        user_id=get_jwt_identity(),
+        user_id=user.id,
+        location_id=body_data.get("location_id") or user.location,
     )
 
     db.session.add(session)
@@ -40,14 +43,10 @@ def create_session():
 
 
 @sessions_bp.route("/<int:id>", methods=["DELETE"])
-@jwt_required()
+@authorise_as_admin
 def delete_session(id):
     session = find_entity_by_id(Session, id)
     return delete_restricted_entity(session, session.user_id)
-    # if session:
-    #     db.session.delete(session)
-    #     db.session.commit()
-    #     return {"message": f"session '{session.name}' deleted successfully!"}
 
 
 # NB: no updating session counts here, they have their own endpoint
@@ -60,6 +59,7 @@ def update_session(id):
 
     session.date = body_data.get("date") or session.date
     session.user_id = get_jwt_identity()
+    session.location_id = body_data.get("location_id") or session.location_id
 
     db.session.commit()
     return session_schema.dump(session)
