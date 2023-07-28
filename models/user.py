@@ -1,6 +1,7 @@
+from marshmallow import fields
+
 from init import db, ma
 
-from marshmallow import fields
 
 # Builds model for 'users' table in db
 # Related to Sessions, Birds, and ApprovedBirds (latter only if admin)

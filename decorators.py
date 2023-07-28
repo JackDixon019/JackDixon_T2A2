@@ -43,5 +43,3 @@ def authorise_as_admin_or_original_user(fn):
         else:
             return {"error": "Not authorised to perform action"}, 403
     return wrapper
-
-

@@ -21,7 +21,7 @@ class SessionCountSchema(ma.Schema):
     count = validate.Range(min=0)
     bird = fields.Nested('BirdSchema', only=['id'])
     class Meta:
-        fields = ('id', 'session_id', 'bird_id', 'bird', 'count')
+        fields = ('id', 'session_id', 'bird_id', 'count')
         ordered = True
 
 session_count_schema = SessionCountSchema()

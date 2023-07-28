@@ -1,6 +1,7 @@
+from marshmallow import fields
+
 from init import db, ma
 
-from marshmallow import fields
 
 # Builds model for 'locations' table in db
 class Location(db.Model):

@@ -1,8 +1,9 @@
 from dataclasses import fields
-from init import db, ma
-
 from datetime import datetime
+
 from marshmallow import fields
+
+from init import db, ma
 
 
 # Builds model for 'sessions' table in db
@@ -24,7 +25,7 @@ class SessionSchema(ma.Schema):
     user = fields.Nested('UserSchema', only=['id'])
     session_counts = fields.List(fields.Nested('SessionCountSchema', only=['bird_id', 'count']))
     class Meta:
-        fields = ("id", "date", "user_id", "session_counts", "location_id")
+        fields = ("id", "date", "user_id", "location_id", "session_counts")
         ordered = True
 
 session_schema = SessionSchema()

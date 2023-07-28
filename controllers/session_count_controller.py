@@ -4,12 +4,19 @@ from functions import find_entity_by_id
 
 from init import db
 from models.session import Session, session_schema
-from models.session_count import SessionCount, session_count_schema
+from models.session_count import SessionCount, session_count_schema, session_counts_schema
 from models.bird import Bird
 from models.user import User
 
 
-count_bp = Blueprint("sessions", __name__, url_prefix="/sessions")
+count_bp = Blueprint("session_counts", __name__)
+
+
+@count_bp.route("/", methods=["GET"])
+def get_session_counts(session_id):
+    stmt = db.select(SessionCount).filter_by(session_id=session_id)
+    session_counts = db.session.scalars(stmt)
+    return session_counts_schema.dump(session_counts)
 
 
 @count_bp.route("/", methods=["POST"])

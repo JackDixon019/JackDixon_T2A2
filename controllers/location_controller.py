@@ -53,12 +53,11 @@ def delete_location(id):
 
 
 @locations_bp.route("/<int:id>", methods=["PUT", "PATCH"])
+@authorise_as_admin
 def update_location(id):
     body_data = location_schema.load(request.get_json(), partial=True)
     
     location = find_entity_by_id(Location, id)
-    if not location:
-        return {"error": f"location with id: {id} not found"}
 
     location.name = body_data.get("name") or location.name
 

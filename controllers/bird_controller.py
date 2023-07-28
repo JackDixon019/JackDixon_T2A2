@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from functions import delete_admin_entity, delete_restricted_entity, find_all_entities, find_entity_by_id
+from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
 
 from init import db
 from models.approved_bird import ApprovedBird
