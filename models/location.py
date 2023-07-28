@@ -1,7 +1,7 @@
 from init import db, ma
 
 
-# Builds model for 'birds' table in db
+# Builds model for 'locations' table in db
 class Location(db.Model):
     __tablename__ = "locations"
 

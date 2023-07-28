@@ -3,6 +3,7 @@ from init import db, ma
 from marshmallow import fields
 
 # Builds model for 'users' table in db
+# Related to Sessions, Birds, and ApprovedBirds (latter only if admin)
 class User(db.Model):
     __tablename__ = "users"
 
@@ -12,11 +13,13 @@ class User(db.Model):
     email = db.Column(db.String(), nullable=False, unique=True)
     is_admin = db.Column(db.Boolean(), default=False)
 
-    submitted_birds = db.relationship('Bird', back_populates='submitting_user', cascade='all, delete')
+    submitted_birds = db.relationship('Bird', back_populates='submitting_user')
 
-    approved_birds = db.relationship('ApprovedBird', back_populates='admin', cascade='all, delete')
+    approved_birds = db.relationship('ApprovedBird', back_populates='admin')
 
     user_sessions = db.relationship('Session', back_populates='user', cascade='all, delete')
+
+    # user_location = db.relationship('Location', back_populates='users', cascade='all, delete')
 
 
 class UserSchema(ma.Schema):
