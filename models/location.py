@@ -25,3 +25,4 @@ class LocationSchema(ma.Schema):
 
 location_schema = LocationSchema()
 locations_schema = LocationSchema(many=True)
+locations_search_schema = LocationSchema(exclude=["sessions"], many=True)

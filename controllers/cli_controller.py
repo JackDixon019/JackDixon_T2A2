@@ -68,6 +68,13 @@ def seed_all():
             is_admin=True,
             location=locations[1],
         ),
+        User(
+            username="admin2",
+            email="admin2@email.com",
+            password=bcrypt.generate_password_hash("password2").decode("utf-8"),
+            is_admin=True,
+            location=locations[2],
+        ),
     ]
     
     # Creates Bird objects
@@ -82,19 +89,52 @@ def seed_all():
             name="Cockatoo",
             description="Loud",
             submitting_user=users[0],
-            ),
+        ),
         Bird(
             name="Lorikeet",
             description="Gay",
             submitting_user=users[1],
-            ),
+        ),
+        Bird(
+            name="Kookaburra",
+            description="Rude tbh",
+            submitting_user=users[2],
+            is_approved=True
+        ),
+        Bird(
+            name="Seagull",
+            description="Loud",
+            submitting_user=users[1],
+        ),
+        Bird(
+            name="Budgerigar",
+            description="Chirpy, brightly coloured",
+            submitting_user=users[2],
+            is_approved=True
+        ),
+        Bird(
+            name="Snipe",
+            description="Unseen?",
+            submitting_user=users[0],
+        ),
     ]
 
-    approved_birds = ApprovedBird(
-        admin=users[2],
-        bird=birds[0],
-    )
+    approved_birds = [
+        ApprovedBird(
+            admin=users[2],
+            bird=birds[0],
+        ),
 
+        ApprovedBird(
+            admin=users[2],
+            bird=birds[3],
+        ),
+
+        ApprovedBird(
+            admin=users[3],
+            bird=birds[5],
+        ),
+    ]
     # creates session objects
     sessions = [
         Session(
@@ -109,7 +149,12 @@ def seed_all():
             date="2023-07-23",
             user=users[2],
             session_location=locations[1]
-        )
+        ),
+        Session(
+            date="2023-04-23",
+            user=users[3],
+            session_location=locations[2]
+        ),
     ]
 
     # creates session_count objects
@@ -150,6 +195,30 @@ def seed_all():
         bird=birds[2]
         ),
 
+        SessionCount(
+        count=8,
+        session=sessions[3],
+        bird=birds[5]
+        ),
+
+        SessionCount(
+        count=20,
+        session=sessions[3],
+        bird=birds[4]
+        ),
+
+        SessionCount(
+        count=2,
+        session=sessions[1],
+        bird=birds[3]
+        ),
+
+        SessionCount(
+        count=14,
+        session=sessions[2],
+        bird=birds[6]
+        ),
+
     ]
 
     db.session.add_all(session_counts)
@@ -157,5 +226,5 @@ def seed_all():
     db.session.add_all(birds)
     db.session.add_all(locations)
     db.session.add_all(sessions)
-    db.session.add(approved_birds)
+    db.session.add_all(approved_birds)
     db.session.commit()
