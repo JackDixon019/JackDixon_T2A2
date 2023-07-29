@@ -1,11 +1,14 @@
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
+from sqlalchemy.orm import selectin_polymorphic
 
 from init import db
 from models.approved_bird import ApprovedBird
 from models.bird import Bird, bird_schema, birds_schema
+from models.session_count import SessionCount, session_counts_schema
 from models.user import User
+from models.session import Session, sessions_schema
 
 
 birds_bp = Blueprint("birds", __name__, url_prefix="/birds")
@@ -16,6 +19,28 @@ birds_bp = Blueprint("birds", __name__, url_prefix="/birds")
 def get_all_birds():
     birds = find_all_entities(Bird, Bird.id)
     return birds_schema.dump(birds)
+
+
+# filters all_birds b y user
+@birds_bp.route("/user/<int:user_id>", methods=["GET"])
+def get_birds_by_user(user_id):
+    stmt = db.select(Bird).filter_by(submitting_user_id=user_id)
+    birds = db.session.scalars(stmt)
+    return birds_schema.dump(birds)
+
+# filter_by(location_id=location_id)
+# filters all_birds b y location
+@birds_bp.route("/location/<int:location_id>", methods=["GET"])
+def get_birds_by_location(location_id):
+    birds = set()
+    options = selectin_polymorphic(Session, [SessionCount])
+    stmt = db.select(Session).filter_by(location_id=location_id).options(options)
+    sessions = db.session.scalars(stmt).all()
+    for i in range(len(sessions)):
+        sesh_counts = sessions[i].session_counts
+        for j in sesh_counts:
+            birds.add(j.bird_id)
+    return {f"birds at location: {location_id}": f'{birds}'}
 
 
 # gets a bird
