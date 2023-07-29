@@ -1,12 +1,12 @@
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from functions import delete_admin_entity, delete_restricted_entity, find_all_entities, find_entity_by_id
 
+from decorators import authorise_as_admin
+from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
 from init import db
 from models.approved_bird import ApprovedBird
 from models.bird import Bird, bird_schema, birds_schema
 from models.user import User
-
 
 birds_bp = Blueprint("birds", __name__, url_prefix="/birds")
 
@@ -32,10 +32,10 @@ def create_bird():
     body_data = bird_schema.load(request.get_json())
 
     bird = Bird(
-        name=body_data.get("name"), 
+        name=body_data.get("name"),
         description=body_data.get("description"),
-        submitting_user_id=get_jwt_identity()
-        )
+        submitting_user_id=get_jwt_identity(),
+    )
 
     db.session.add(bird)
     db.session.commit()
@@ -56,7 +56,7 @@ def delete_bird(id):
 def update_bird(id):
     # gets data
     body_data = bird_schema.load(request.get_json(), partial=True)
-    user = find_entity_by_id(User, get_jwt_identity()) 
+    user = find_entity_by_id(User, get_jwt_identity())
 
     stmt = db.select(ApprovedBird).filter_by(bird_id=id)
     approved_bird = db.session.scalar(stmt)
@@ -79,11 +79,29 @@ def update_bird(id):
         # if bird not approved, adds bird to ApprovedBird table
         else:
             bird.is_approved = True
-            approved_bird = ApprovedBird(
-                admin=user,
-                bird=bird
-            )
+            approved_bird = ApprovedBird(admin=user, bird=bird)
             db.session.add(approved_bird)
 
+    db.session.commit()
+    return bird_schema.dump(bird)
+
+
+@birds_bp.route("/<int:id>/approve", methods=["PUT", "PATCH"])
+@jwt_required()
+@authorise_as_admin
+def approve_bird(id):
+    # gets data
+    user = find_entity_by_id(User, get_jwt_identity())
+    stmt = db.select(ApprovedBird).filter_by(bird_id=id)
+    approved_bird = db.session.scalar(stmt)
+    # checks bird isn't already approved
+    if approved_bird:
+        return {"Error": f"Bird already approved by {approved_bird.admin.username}"}
+    # Checks bird exists
+    bird = find_entity_by_id(Bird, id)
+    # toggles is_approved and adds to approved_birds table
+    bird.is_approved = True
+    approved_bird = ApprovedBird(admin=user, bird=bird)
+    db.session.add(approved_bird)
     db.session.commit()
     return bird_schema.dump(bird)

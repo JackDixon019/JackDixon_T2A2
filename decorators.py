@@ -2,9 +2,9 @@ import functools
 
 from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError
+
 from init import db
 from models.user import User
-
 
 
 # just gets user id
@@ -14,7 +14,7 @@ def get_user():
     if db.session.scalar(stmt):
         return db.session.scalar(stmt)
     else:
-        raise ValidationError(f'Current user no longer exists')
+        raise ValidationError(f"Current user no longer exists")
 
 
 # Passes through function if user is an admin, otherwise throws error
@@ -25,7 +25,8 @@ def authorise_as_admin(fn):
         if user.is_admin:
             return fn(*args, **kwargs)
         else:
-            return {"error": "Not authorised to perform action"}, 403
+            raise ValidationError("Not authorised to perform action")
+
     return wrapper
 
 
@@ -42,6 +43,5 @@ def authorise_as_admin_or_original_user(fn):
             return fn(*args, **kwargs)
         else:
             return {"error": "Not authorised to perform action"}, 403
+
     return wrapper
-
-
