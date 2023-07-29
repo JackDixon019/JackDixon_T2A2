@@ -3,8 +3,8 @@ import os
 from flask import Flask
 from marshmallow import ValidationError
 
-from init import bcrypt, db, jwt, ma
 from controllers.__init__ import registerable_controllers
+from init import bcrypt, db, jwt, ma
 
 
 def create_app():
@@ -19,15 +19,15 @@ def create_app():
 
     @app.errorhandler(ValidationError)
     def validation_error(err):
-        return {'error':str(err)}, 400
-    
+        return {"error": str(err)}, 400
+
     @app.errorhandler(400)
     def validation_error(err):
-        return {'error':str(err)}, 400
-    
+        return {"error": str(err)}, 400
+
     @app.errorhandler(404)
     def validation_error(err):
-        return {'error':str(err)}, 404
+        return {"error": str(err)}, 404
 
     # Calls objects within function to prevent double-import errors
     db.init_app(app)

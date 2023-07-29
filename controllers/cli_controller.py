@@ -1,13 +1,12 @@
 from flask import Blueprint
 
-from init import db, bcrypt
-
+from init import bcrypt, db
+from models.approved_bird import ApprovedBird
 from models.bird import Bird
 from models.location import Location
 from models.session import Session
-from models.user import User
 from models.session_count import SessionCount
-from models.approved_bird import ApprovedBird
+from models.user import User
 
 db_commands = Blueprint("db", __name__)
 
@@ -35,10 +34,12 @@ def reset_db():
     db.drop_all()
     db.create_all()
     seed_all()
-    print('I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth.')
+    print(
+        "I have set my rainbow in the clouds, and it will be the sign of the covenant between me and the earth."
+    )
+
 
 def seed_all():
-
     # creates location objects
     locations = [
         Location(name="Sydney"),
@@ -76,7 +77,7 @@ def seed_all():
             location=locations[2],
         ),
     ]
-    
+
     # Creates Bird objects
     birds = [
         Bird(
@@ -99,7 +100,7 @@ def seed_all():
             name="Kookaburra",
             description="Rude tbh",
             submitting_user=users[2],
-            is_approved=True
+            is_approved=True,
         ),
         Bird(
             name="Seagull",
@@ -110,7 +111,7 @@ def seed_all():
             name="Budgerigar",
             description="Chirpy, brightly coloured",
             submitting_user=users[2],
-            is_approved=True
+            is_approved=True,
         ),
         Bird(
             name="Snipe",
@@ -124,12 +125,10 @@ def seed_all():
             admin=users[2],
             bird=birds[0],
         ),
-
         ApprovedBird(
             admin=users[2],
             bird=birds[3],
         ),
-
         ApprovedBird(
             admin=users[3],
             bird=birds[5],
@@ -145,80 +144,22 @@ def seed_all():
             user=users[0],
             session_location=locations[0],
         ),
-        Session(
-            date="2023-07-23",
-            user=users[2],
-            session_location=locations[1]
-        ),
-        Session(
-            date="2023-04-23",
-            user=users[3],
-            session_location=locations[2]
-        ),
+        Session(date="2023-07-23", user=users[2], session_location=locations[1]),
+        Session(date="2023-04-23", user=users[3], session_location=locations[2]),
     ]
 
     # creates session_count objects
     session_counts = [
-        SessionCount(
-        count=5,
-        session=sessions[0],
-        bird=birds[0]
-        ),
-        
-        SessionCount(
-        count=2,
-        session=sessions[0],
-        bird=birds[1]
-        ),
-
-        SessionCount(
-        count=1,
-        session=sessions[0],
-        bird=birds[2]
-        ),
-
-        SessionCount(
-        count=5,
-        session=sessions[1],
-        bird=birds[0]
-        ),
-
-        SessionCount(
-        count=5,
-        session=sessions[1],
-        bird=birds[1]
-        ),
-
-        SessionCount(
-        count=5,
-        session=sessions[2],
-        bird=birds[2]
-        ),
-
-        SessionCount(
-        count=8,
-        session=sessions[3],
-        bird=birds[5]
-        ),
-
-        SessionCount(
-        count=20,
-        session=sessions[3],
-        bird=birds[4]
-        ),
-
-        SessionCount(
-        count=2,
-        session=sessions[1],
-        bird=birds[3]
-        ),
-
-        SessionCount(
-        count=14,
-        session=sessions[2],
-        bird=birds[6]
-        ),
-
+        SessionCount(count=5, session=sessions[0], bird=birds[0]),
+        SessionCount(count=2, session=sessions[0], bird=birds[1]),
+        SessionCount(count=1, session=sessions[0], bird=birds[2]),
+        SessionCount(count=5, session=sessions[1], bird=birds[0]),
+        SessionCount(count=5, session=sessions[1], bird=birds[1]),
+        SessionCount(count=5, session=sessions[2], bird=birds[2]),
+        SessionCount(count=8, session=sessions[3], bird=birds[5]),
+        SessionCount(count=20, session=sessions[3], bird=birds[4]),
+        SessionCount(count=2, session=sessions[1], bird=birds[3]),
+        SessionCount(count=14, session=sessions[2], bird=birds[6]),
     ]
 
     db.session.add_all(session_counts)

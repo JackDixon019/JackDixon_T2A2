@@ -1,11 +1,10 @@
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required
+
 from decorators import authorise_as_admin
 from functions import find_entity_by_id
-
 from init import db
 from models.location import Location, location_schema, locations_schema
-
 
 locations_bp = Blueprint("locations", __name__, url_prefix="/locations")
 
@@ -30,8 +29,7 @@ def create_location():
     body_data = location_schema.load(request.get_json())
 
     location = location(
-        name=body_data.get("name"), 
-        description=body_data.get("description")
+        name=body_data.get("name"), description=body_data.get("description")
     )
 
     db.session.add(location)
@@ -56,7 +54,7 @@ def delete_location(id):
 @authorise_as_admin
 def update_location(id):
     body_data = location_schema.load(request.get_json(), partial=True)
-    
+
     location = find_entity_by_id(Location, id)
 
     location.name = body_data.get("name") or location.name

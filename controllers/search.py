@@ -5,10 +5,9 @@ from decorators import authorise_as_admin_or_original_user
 from functions import find_entity_by_id
 from init import db
 from models.bird import Bird, birds_schema
-from models.location import Location
+from models.location import Location, locations_search_schema
 from models.session import Session
 from models.session_count import SessionCount
-from models.location import locations_search_schema
 from models.user import User
 
 search_bp = Blueprint("search", __name__, url_prefix="/search")
@@ -20,6 +19,7 @@ search_bp = Blueprint("search", __name__, url_prefix="/search")
 def get_birds_by_user(user_id):
     # checks user exists
     find_entity_by_id(User, user_id)
+
     # This is a definitely jank, but I wanted to use
     # the authorise_as_admin_or_user decorator and it's set up to use args[1]
     @authorise_as_admin_or_original_user
@@ -27,6 +27,7 @@ def get_birds_by_user(user_id):
         stmt = db.select(Bird).filter_by(submitting_user_id=user_id)
         birds = db.session.scalars(stmt)
         return birds_schema.dump(birds)
+
     return filter_by_user("placeholder", user_id)
 
 

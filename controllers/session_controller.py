@@ -3,8 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from controllers.session_count_controller import count_bp
 from decorators import authorise_as_admin
-from functions import (delete_restricted_entity, find_all_entities,
-                       find_entity_by_id)
+from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
 from init import db
 from models.session import Session, session_schema, sessions_schema
 from models.user import User
@@ -33,7 +32,7 @@ def create_session():
     user = find_entity_by_id(User, get_jwt_identity())
 
     session = Session(
-        date=body_data.get("date"), 
+        date=body_data.get("date"),
         user_id=user.id,
         location_id=body_data.get("location_id") or user.location,
     )
@@ -55,7 +54,7 @@ def delete_session(id):
 @jwt_required()
 def update_session(id):
     body_data = session_schema.load(request.get_json(), partial=True)
-    
+
     session = find_entity_by_id(Session, id)
 
     session.date = body_data.get("date") or session.date

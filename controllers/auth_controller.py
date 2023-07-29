@@ -2,13 +2,12 @@ from datetime import timedelta
 
 from flask import Blueprint, request
 from flask_jwt_extended import create_access_token, jwt_required
-from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
+from sqlalchemy.exc import IntegrityError
 
-from init import db, bcrypt
-from models.user import User, user_schema
-from decorators import authorise_as_admin_or_original_user
 from functions import delete_restricted_entity, find_entity_by_id
+from init import bcrypt, db
+from models.user import User, user_schema
 
 # defines blueprint
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -23,7 +22,9 @@ def create_user():
         user = User()
         password = body_data.get("password")
         if password:
-            user.password = bcrypt.generate_password_hash(body_data.get("password")).decode("utf-8")
+            user.password = bcrypt.generate_password_hash(
+                body_data.get("password")
+            ).decode("utf-8")
         user.username = body_data.get("username")
         user.email = body_data.get("email")
 
@@ -68,11 +69,9 @@ def delete_user(id):
     return delete_restricted_entity(user, user.id)
 
 
-
 # returns a user
 @auth_bp.route("/<int:id>", methods=["GET"])
 def get_user(id):
     user = find_entity_by_id(User, id)
-
     if user:
         return user_schema.dump(user)
