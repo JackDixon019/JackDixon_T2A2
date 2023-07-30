@@ -1,5 +1,7 @@
 from flask import Blueprint, request, abort
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from psycopg2 import errorcodes
+from sqlalchemy.exc import IntegrityError
 
 from decorators import authorise_as_admin
 from functions import delete_restricted_entity, find_entity_by_id
@@ -15,16 +17,19 @@ birds_bp = Blueprint("birds", __name__, url_prefix="/birds")
 @birds_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_bird():
-    body_data = bird_schema.load(request.get_json())
-    bird = Bird(
-        name=body_data.get("name"),
-        description=body_data.get("description"),
-        submitting_user_id=get_jwt_identity(),
-    )
-    db.session.add(bird)
-    db.session.commit()
-    return bird_schema.dump(bird), 201
-
+    try:
+        body_data = bird_schema.load(request.get_json())
+        bird = Bird(
+            name=body_data.get("name"),
+            description=body_data.get("description"),
+            submitting_user_id=get_jwt_identity(),
+        )
+        db.session.add(bird)
+        db.session.commit()
+        return bird_schema.dump(bird), 201
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+            abort(400, f"Required field: {err.orig.diag.column_name} empty")
 
 # deletes a bird
 @birds_bp.route("/<int:id>", methods=["DELETE"])

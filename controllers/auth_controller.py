@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from flask import Blueprint, request, abort
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from marshmallow import EXCLUDE, ValidationError
 from psycopg2 import errorcodes
 from sqlalchemy.exc import IntegrityError
 
@@ -20,10 +21,15 @@ def create_user():
     try:
         # gets data from request body
         # user_register_schema is used to validate data -> password is excluded from user_schema which caused errors
-        body_data = user_register_schema.load(request.get_json())
+        body_data = request.get_json()
+        # This performs validation checks on the data
+        user_register_schema.load(body_data, unknown=EXCLUDE)
         user = User()
         password = body_data.get("password")
         if password:
+            # checks password length
+            if len(password) < 6:
+                raise ValidationError("Password must be at least 6 characters long")
             # encrypts password
             user.password = bcrypt.generate_password_hash(
                 body_data.get("password")
@@ -34,7 +40,7 @@ def create_user():
         # adds user to db
         db.session.add(user)
         db.session.commit()
-        return user_schema.dump(user), 201
+        return user_register_schema.dump(user), 201
 
     except IntegrityError as err:
         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
