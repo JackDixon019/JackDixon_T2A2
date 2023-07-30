@@ -5,21 +5,10 @@ from functions import find_entity_by_id
 from init import db
 from models.bird import Bird
 from models.session import Session, session_schema
-from models.session_count import (
-    SessionCount,
-    session_count_schema,
-    session_counts_schema,
-)
+from models.session_count import SessionCount, session_count_schema
 from models.user import User
 
 count_bp = Blueprint("session_counts", __name__)
-
-
-@count_bp.route("/", methods=["GET"])
-def get_session_counts(session_id):
-    stmt = db.select(SessionCount).filter_by(session_id=session_id)
-    session_counts = db.session.scalars(stmt)
-    return session_counts_schema.dump(session_counts)
 
 
 @count_bp.route("/", methods=["POST"])
@@ -29,7 +18,7 @@ def create_session_count(session_id):
     body_data = session_count_schema.load(request.get_json(), partial=True)
 
     # finds the session and the bird from body data
-    # find_entity_by_id handles error in case entity doesn"t exist
+    # find_entity_by_id handles error in case entity doesn't exist
     counting_session = find_entity_by_id(Session, session_id)
     bird_being_counted = find_entity_by_id(Bird, body_data.get("bird_id"))
 
@@ -38,10 +27,8 @@ def create_session_count(session_id):
         bird_id=body_data.get("bird_id"), session_id=session_id
     )
     bird_already_counted = db.session.scalar(stmt)
-
     if bird_already_counted:
         return {"Error": "This bird has already been counted this session."}
-
     # Creates session_count object
     session_count = SessionCount(
         bird=bird_being_counted, count=body_data.get("count"), session=counting_session

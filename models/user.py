@@ -1,7 +1,7 @@
 from marshmallow import fields
+from marshmallow.validate import And, Length, Regexp
 
 from init import db, ma
-
 
 # Builds model for "users" table in db
 # Related to Sessions, Birds, and ApprovedBirds (latter only if admin)
@@ -32,6 +32,14 @@ class UserSchema(ma.Schema):
     )
     user_sessions = fields.List(fields.Nested("SessionSchema", exclude=["user_id"]))
     approved_birds = fields.List(fields.Nested("ApprovedBirdSchema", only=["bird_id"]))
+    location_id = fields.Integer(required=True)
+    location = fields.Nested("LocationSchema", only=["name"])
+    # the Email() field validates that it is an email. Very handy
+    email = fields.Email()
+    username = fields.String(required=True, validate=And(
+        Length(min=2, error='Username must be at least 2 characters long'),
+        Regexp('^[a-zA-Z0-9]+$', error='Only letters and numbers are allowed')
+        ))
 
     class Meta:
         fields = (
@@ -40,6 +48,8 @@ class UserSchema(ma.Schema):
             "password",
             "is_admin",
             "email",
+            "location_id",
+            "location",
             "submitted_birds",
             "user_sessions",
             "approved_birds",
@@ -47,5 +57,6 @@ class UserSchema(ma.Schema):
         ordered = True
 
 
+user_register_schema = UserSchema()
 user_schema = UserSchema(exclude=["password"])
 users_schema = UserSchema(many=True, exclude=["password"])
