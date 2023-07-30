@@ -37,6 +37,10 @@ def create_app():
     def return_error(err):
         return {"error": str(err)}, 404
 
+    @app.errorhandler(405)
+    def return_error(err):
+        return {"error": str(err)}, 405
+
     @app.errorhandler(409)
     def return_error(err):
         return {"error": str(err)}, 409

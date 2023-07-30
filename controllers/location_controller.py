@@ -1,4 +1,4 @@
-from flask import Blueprint, request, abort
+from flask import Blueprint, abort, request
 from flask_jwt_extended import jwt_required
 from psycopg2 import errorcodes
 from sqlalchemy.exc import IntegrityError
@@ -6,22 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from decorators import authorise_as_admin
 from functions import delete_admin_entity, find_entity_by_id
 from init import db
-from models.location import Location, location_schema, locations_schema
+from models.location import Location, location_schema
 
 locations_bp = Blueprint("locations", __name__, url_prefix="/locations")
-
-
-@locations_bp.route("/", methods=["GET"])
-def get_all_locations():
-    stmt = db.select(Location).order_by(Location.id)
-    locations = db.session.scalars(stmt)
-    return locations_schema.dump(locations)
-
-
-@locations_bp.route("/<int:id>")
-def get_one_location(id):
-    location = find_entity_by_id(Location, id)
-    return location_schema.dump(location)
 
 
 @locations_bp.route("/", methods=["POST"])

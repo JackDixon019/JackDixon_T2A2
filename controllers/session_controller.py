@@ -5,26 +5,14 @@ from sqlalchemy.exc import ProgrammingError
 
 from controllers.session_count_controller import count_bp
 from decorators import authorise_as_admin_or_original_user
-from functions import delete_restricted_entity, find_all_entities, find_entity_by_id
+from functions import delete_restricted_entity, find_entity_by_id
 from init import db
-from models.session import Session, session_schema, sessions_schema
+from models.session import Session, session_schema
 from models.user import User
 
 sessions_bp = Blueprint("sessions", __name__, url_prefix="/sessions")
 # establishes count_bp as a child of sessions_bp
 sessions_bp.register_blueprint(count_bp, url_prefix="/<int:session_id>/count")
-
-
-@sessions_bp.route("/", methods=["GET"])
-def get_all_sessions():
-    sessions = find_all_entities(Session, Session.id)
-    return sessions_schema.dump(sessions)
-
-
-@sessions_bp.route("/<int:id>")
-def get_one_session(id):
-    session = find_entity_by_id(Session, id)
-    return session_schema.dump(session)
 
 
 @sessions_bp.route("/", methods=["POST"])
