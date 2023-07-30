@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from functions import find_entity_by_id
@@ -16,19 +16,23 @@ count_bp = Blueprint("session_counts", __name__)
 def create_session_count(session_id):
     # gets data from request body
     body_data = session_count_schema.load(request.get_json(), partial=True)
+    user_id = get_jwt_identity()
 
     # finds the session and the bird from body data
     # find_entity_by_id handles error in case entity doesn't exist
     counting_session = find_entity_by_id(Session, session_id)
     bird_being_counted = find_entity_by_id(Bird, body_data.get("bird_id"))
 
+    # checks user is correct user to add a session count
+    if user_id != counting_session.user_id:
+        abort(403, "Not authorised to perform action")
     # Checks whether this bird has already been counted in this session
     stmt = db.select(SessionCount).filter_by(
         bird_id=body_data.get("bird_id"), session_id=session_id
     )
     bird_already_counted = db.session.scalar(stmt)
     if bird_already_counted:
-        return {"Error": "This bird has already been counted this session."}
+        abort(409, "This bird has already been counted this session.")
     # Creates session_count object
     session_count = SessionCount(
         bird=bird_being_counted, count=body_data.get("count"), session=counting_session
@@ -46,7 +50,7 @@ def edit_session_count(session_id, id):
     session_count = find_entity_by_id(SessionCount, id)
     if session_count.session_id != session_id:
         return {
-            "Error": f"The session with id: {session_id} is not associated with the count you wish to edit. Please check your id numbers and try again."
+            "Error": f"The session with id: {session_id} is not associated with the count you wish to edit."
         }
 
     # finds session and user entities by id
@@ -55,7 +59,7 @@ def edit_session_count(session_id, id):
 
     # only allows original user or admin to edit data
     if user.is_admin == False and counting_session.user_id != user.id:
-        return {"error": "Not authorised to perform action"}, 403
+        abort(403, "Not authorised to perform action")
     # gets body data from request
     body_data = session_count_schema.load(request.get_json(), partial=True)
     bird_id = body_data.get("bird_id")
@@ -76,7 +80,7 @@ def edit_session_count(session_id, id):
 
         # "> 1" is the number to check, since the data has already been updated so there must be at least 1
         if bird_count > 1:
-            return {"Error": "This bird has already been counted this session."}
+            abort(409, "This bird has already been counted this session.")
     # updates entry with new count if it exists
     session_count.count = body_data.get("count") or session_count.count
     # adds and commits new data

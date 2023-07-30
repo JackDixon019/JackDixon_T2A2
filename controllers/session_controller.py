@@ -19,13 +19,17 @@ sessions_bp.register_blueprint(count_bp, url_prefix="/<int:session_id>/count")
 @jwt_required()
 def create_session():
     try:
+        # Get's data from body
         body_data = session_schema.load(request.get_json(), partial=True)
+        # identifies user
         user = find_entity_by_id(User, get_jwt_identity())
+        # creates session
         session = Session(
             date=body_data.get("date"),
             user_id=user.id,
             location_id=body_data.get("location_id") or user.location,
         )
+        # adds session to database and commits
         db.session.add(session)
         db.session.commit()
         return session_schema.dump(session), 201
@@ -37,7 +41,9 @@ def create_session():
 @sessions_bp.route("/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_session(id):
+    # finds session
     session = find_entity_by_id(Session, id)
+    # deletes session if user = user who created the session or admin
     return delete_restricted_entity(session, session.user_id)
 
 
@@ -46,8 +52,11 @@ def delete_session(id):
 @jwt_required()
 def update_session(id):
     try:
+        # finds session
         session = find_entity_by_id(Session, id)
+        # this function is at the bottom of this file
         update_session_data(session, session.user_id)
+        # commits changes
         db.session.commit()
         return session_schema.dump(session)
     except ProgrammingError as err:
@@ -55,9 +64,11 @@ def update_session(id):
             abort(500, "Date value required for 'date' attribute")
 
 
-
+# Checks user is the original user or an admin
 @authorise_as_admin_or_original_user
 def update_session_data(session, required_id):
+    # gets body data
     body_data = session_schema.load(request.get_json(), partial=True)
+    # updates details
     session.date = body_data.get("date") or session.date
     session.location_id = body_data.get("location_id") or session.location_id

@@ -1,5 +1,7 @@
 from flask import Blueprint, request, abort
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from psycopg2 import errorcodes
+from sqlalchemy.exc import IntegrityError
 
 from decorators import authorise_as_admin
 from functions import delete_restricted_entity, find_entity_by_id
@@ -15,16 +17,19 @@ birds_bp = Blueprint("birds", __name__, url_prefix="/birds")
 @birds_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_bird():
-    body_data = bird_schema.load(request.get_json())
-    bird = Bird(
-        name=body_data.get("name"),
-        description=body_data.get("description"),
-        submitting_user_id=get_jwt_identity(),
-    )
-    db.session.add(bird)
-    db.session.commit()
-    return bird_schema.dump(bird), 201
-
+    try:
+        body_data = bird_schema.load(request.get_json())
+        bird = Bird(
+            name=body_data.get("name"),
+            description=body_data.get("description"),
+            submitting_user_id=get_jwt_identity(),
+        )
+        db.session.add(bird)
+        db.session.commit()
+        return bird_schema.dump(bird), 201
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+            abort(400, f"Required field: {err.orig.diag.column_name} empty")
 
 # deletes a bird
 @birds_bp.route("/<int:id>", methods=["DELETE"])
@@ -40,7 +45,6 @@ def delete_bird(id):
 def update_bird(id):
     # gets data
     body_data = bird_schema.load(request.get_json(), partial=True)
-    user = find_entity_by_id(User, get_jwt_identity())
     # checks for bird in approved_birds table
     stmt = db.select(ApprovedBird).filter_by(bird_id=id)
     approved_bird = db.session.scalar(stmt)
@@ -49,21 +53,12 @@ def update_bird(id):
     #  updates details
     bird.name = body_data.get("name") or bird.name
     bird.description = body_data.get("description") or bird.description
-    bird.submitting_user_id = user.id
+    bird.submitting_user_id = get_jwt_identity()
     # if user is not admin, unapproves bird
-    if approved_bird and not user.is_admin:
+    if approved_bird:
         bird.is_approved = False
         # removes bird from ApprovedBird table
         db.session.delete(approved_bird)
-    elif user.is_admin:
-        # if bird already approved, updates admin approving
-        if approved_bird:
-            approved_bird.admin = user
-        # if bird not approved, adds bird to ApprovedBird table
-        else:
-            bird.is_approved = True
-            approved_bird = ApprovedBird(admin=user, bird=bird)
-            db.session.add(approved_bird)
 
     db.session.commit()
     return bird_schema.dump(bird)
