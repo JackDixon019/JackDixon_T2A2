@@ -14,6 +14,7 @@ search_bp = Blueprint("search", __name__, url_prefix="/search")
 
 # returns a user
 @search_bp.route("/users/<int:id>", methods=["GET"])
+@jwt_required()
 def get_user(id):
     user = find_entity_by_id(User, id)
     return user_schema.dump(user)

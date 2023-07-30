@@ -45,7 +45,6 @@ def delete_bird(id):
 def update_bird(id):
     # gets data
     body_data = bird_schema.load(request.get_json(), partial=True)
-    user = find_entity_by_id(User, get_jwt_identity())
     # checks for bird in approved_birds table
     stmt = db.select(ApprovedBird).filter_by(bird_id=id)
     approved_bird = db.session.scalar(stmt)
@@ -54,21 +53,12 @@ def update_bird(id):
     #  updates details
     bird.name = body_data.get("name") or bird.name
     bird.description = body_data.get("description") or bird.description
-    bird.submitting_user_id = user.id
+    bird.submitting_user_id = get_jwt_identity()
     # if user is not admin, unapproves bird
-    if approved_bird and not user.is_admin:
+    if approved_bird:
         bird.is_approved = False
         # removes bird from ApprovedBird table
         db.session.delete(approved_bird)
-    elif user.is_admin:
-        # if bird already approved, updates admin approving
-        if approved_bird:
-            approved_bird.admin = user
-        # if bird not approved, adds bird to ApprovedBird table
-        else:
-            bird.is_approved = True
-            approved_bird = ApprovedBird(admin=user, bird=bird)
-            db.session.add(approved_bird)
 
     db.session.commit()
     return bird_schema.dump(bird)

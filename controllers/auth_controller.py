@@ -62,7 +62,7 @@ def auth_login():
         )
         return {"email": user.email, "token": token, "is_admin": user.is_admin}
     else:
-        abort(401, "Incorrect username or password")
+        abort(401, "Incorrect email or password")
 
 
 # deletes existing user
@@ -80,7 +80,7 @@ def delete_user(id):
 
 
 # Allows user to update their location
-@auth_bp.route("/location/<int:id>", methods=["PUT"])
+@auth_bp.route("/location/<int:id>", methods=["PUT", "PATCH"])
 @jwt_required()
 def update_user_location(id):
     user = find_entity_by_id(User, get_jwt_identity())
@@ -88,5 +88,5 @@ def update_user_location(id):
     user.location = location
     db.session.add(user)
     db.session.commit()
-    return user_schema.dump(user)
+    return user_register_schema.dump(user)
     
