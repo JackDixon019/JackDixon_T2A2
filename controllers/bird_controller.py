@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from decorators import authorise_as_admin
@@ -94,9 +94,9 @@ def approve_bird(id):
     user = find_entity_by_id(User, get_jwt_identity())
     stmt = db.select(ApprovedBird).filter_by(bird_id=id)
     approved_bird = db.session.scalar(stmt)
-    # checks bird isn't already approved
+    # checks if bird already approved
     if approved_bird:
-        return {"Error": f"Bird already approved by {approved_bird.admin.username}"}
+        abort(409, f"Bird already approved by {approved_bird.admin.username}")
     # Checks bird exists
     bird = find_entity_by_id(Bird, id)
     # toggles is_approved and adds to approved_birds table

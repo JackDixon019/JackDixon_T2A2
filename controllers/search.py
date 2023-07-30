@@ -1,7 +1,6 @@
 from flask import Blueprint
 from flask_jwt_extended import jwt_required
 
-from decorators import authorise_as_admin_or_original_user
 from functions import find_entity_by_id
 from init import db
 from models.bird import Bird, birds_schema
@@ -19,16 +18,10 @@ search_bp = Blueprint("search", __name__, url_prefix="/search")
 def get_birds_by_user(user_id):
     # checks user exists
     find_entity_by_id(User, user_id)
-
-    # This is a definitely jank, but I wanted to use
-    # the authorise_as_admin_or_user decorator and it's set up to use args[1]
-    @authorise_as_admin_or_original_user
-    def filter_by_user(_, user_id):
-        stmt = db.select(Bird).filter_by(submitting_user_id=user_id)
-        birds = db.session.scalars(stmt)
-        return birds_schema.dump(birds)
-
-    return filter_by_user("placeholder", user_id)
+    # filters birds and returns json
+    stmt = db.select(Bird).filter_by(submitting_user_id=user_id)
+    birds = db.session.scalars(stmt)
+    return birds_schema.dump(birds)
 
 
 # filters all_birds by location

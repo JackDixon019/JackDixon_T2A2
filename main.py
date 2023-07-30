@@ -18,16 +18,36 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 
     @app.errorhandler(ValidationError)
-    def validation_error(err):
+    def return_error(err):
         return {"error": str(err)}, 400
 
     @app.errorhandler(400)
-    def validation_error(err):
+    def return_error(err):
         return {"error": str(err)}, 400
+    
+    @app.errorhandler(401)
+    def return_error(err):
+        return {"error": str(err)}, 401
+    
+    @app.errorhandler(403)
+    def return_error(err):
+        return {"error": str(err)}, 403
 
     @app.errorhandler(404)
-    def validation_error(err):
+    def return_error(err):
         return {"error": str(err)}, 404
+
+    @app.errorhandler(409)
+    def return_error(err):
+        return {"error": str(err)}, 409
+    
+    @app.errorhandler(410)
+    def return_error(err):
+        return {"error": str(err)}, 410
+    
+    @app.errorhandler(500)
+    def return_error(err):
+        return {"error": str(err)}, 500
 
     # Calls objects within function to prevent double-import errors
     db.init_app(app)
